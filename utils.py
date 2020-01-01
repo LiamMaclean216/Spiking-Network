@@ -6,11 +6,11 @@ class Spike1d_block(torch.nn.Module):
         super(Spike1d_block, self).__init__()
         self.layers = layers
         
-    def forward(self,in_spikes):
+    def forward(self,in_spikes , training = True):
         out_spikes = []
         out_pots = []
         for idx,l in enumerate(self.layers):
-            o, p = l(in_spikes[idx:idx + l.get_n_inputs()])
+            o, p = l(in_spikes[idx:idx + l.get_n_inputs()], training)
             out_pots.append(p)
             out_spikes.append(o)
         
@@ -48,4 +48,4 @@ def draw_spikes(spikes, ax, l_dim = 4, n_layers = 3):
     to_draw = to_draw.t()
     
     ax.clear()
-    ax.imshow(to_draw,vmin=-0.1, vmax=1)  
+    ax.imshow(to_draw,vmin=-0.1, vmax=1)
