@@ -8,7 +8,12 @@ def sig_d(x):
     s = sig(x)
     return s * (1 - s)
 
+def normal(x, m, s):
+    a = 1/torch.sqrt(2*math.pi*(s**2))
+    return  a* torch.exp(-((x-m)**2)/(2*s**2))
 
+def normal_d(x, m, s):
+    return -((x-m)/(s**2)) * normal(x, m, s)
 
 class Dense(torch.nn.Module):
     def __init__(self, n_in, n_out , sigmoid = False, pointwise = False):
@@ -25,6 +30,7 @@ class Dense(torch.nn.Module):
         self.reset_parameters()
 
     def forward(self, spikes):
+        
         a = torch.zeros([self.n_out])
         for r, c in zip(spikes,self.weight):
             if self.sigmoid:
@@ -32,7 +38,6 @@ class Dense(torch.nn.Module):
             else:
                 a += (r * c)
         
-        #print(self.weight)
         return a
 
     def reset_parameters(self):
@@ -40,6 +45,23 @@ class Dense(torch.nn.Module):
         self.weight.data.uniform_(0, stdv)
         
     def weight_update(self, error, lr = 1):
-        delta_w = sig_d(self.weight) * sig_d(error/5) * torch.sign(error) * lr
-        self.weight += delta_w    
+        delta_w = self.weight * error * lr #sig_d(self.weight) * sig_d(error) * torch.sign(error) * lr
+        self.weight += delta_w
+        
         return (sig(self.weight))
+
+def draw_spikes(x, shape):
+    canvas = np.zeros([ max(shape), len(shape)])
+    index = 0
+    
+    for idx, s in enumerate(shape):
+        for j in range(s):
+            canvas[j][idx] = x[index]
+
+            index += 1
+    
+    ax.clear()
+    ax.imshow(canvas,vmin=-0.1, vmax=1)
+    
+
+
