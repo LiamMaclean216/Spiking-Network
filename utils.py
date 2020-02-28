@@ -1,5 +1,6 @@
 import torch
 import math
+import numpy as np
 
 def sig(x):
     return (1 / (1 + torch.exp(-x)))
@@ -50,7 +51,7 @@ class Dense(torch.nn.Module):
         
         return (sig(self.weight))
 
-def draw_spikes(x, shape):
+def draw_spikes(x, shape, ax):
     canvas = np.zeros([ max(shape), len(shape)])
     index = 0
     
