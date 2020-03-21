@@ -11,7 +11,7 @@ def sig_d(x):
 
 def normal(x, m, s):
     a = 1/torch.sqrt(2*math.pi*(s**2))
-    return  a* torch.exp(-((x-m)**2)/(2*s**2))
+    return ( a* torch.exp(-((x-m)**2)/(2*s**2)))
 
 def normal_d(x, m, s):
     return -((x-m)/(s**2)) * normal(x, m, s)
