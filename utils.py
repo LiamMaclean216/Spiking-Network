@@ -22,8 +22,11 @@ class Node(torch.nn.Module):
         self.weights = torch.zeros(len(self.connections))
         self.charges = torch.zeros(len(self.connections))
         
-        self.expected_error = torch.ones(len(self.connections)) #* 0.1
-        self.mean =  torch.ones(len(self.connections)) * 0.5
+        #self.expected_error = torch.ones(len(self.connections)) #* 0.1
+        #self.mean =  torch.ones(len(self.connections)) * 0.5
+        
+        self.expected_error = torch.abs(torch.distributions.Normal(0.5,0.4).sample([len(self.connections)]))
+        self.mean =  torch.abs(torch.distributions.Normal(1,0.4).sample([len(self.connections)]))
         
     def get_ratios(self):
         uncertainties = torch.zeros([len(self.connections),2])
@@ -67,13 +70,13 @@ class Node(torch.nn.Module):
     def in_spike(self):
         c = self.charges
         
-        lr = 0.3
+        lr = 0.4# + torch.distributions.Normal(0,0.2).sample()
         
-        self.expected_error += (((torch.abs(c - self.mean))-self.expected_error))*lr
+        self.expected_error += (((torch.abs(c - self.mean))-self.expected_error))*self.expected_error#*lr
         self.mean = c
         
         new_w = self.correct_weights()
-        delta_w = (new_w - self.weights) #* lr
+        delta_w = (new_w - self.weights) * lr
         
         self.weights += delta_w
         self.charges = torch.zeros(self.charges.shape)
@@ -101,6 +104,6 @@ class Node(torch.nn.Module):
         return normal(self.mean[idx] , self.mean[idx], self.get_uncertainty_ind(self.mean[idx], idx))
     
     def __str__(self):
-        return ("Weights : {}, mean : {}, exp_error : {}".format(self.weights, self.mean, 
+        return ("{} | Weights : {}, mean : {}, exp_error : {}".format(self.name, self.weights, self.mean, 
                                                                                    self.expected_error))
 
